@@ -69,8 +69,8 @@ float dist(float x1, float y1, float x2, float y2, float ang) {
 }
 
 void drawRays2D() {
-	//glColor3f(0,1,1); glBegin(GL_QUADS); glVertex2i(526,  0); glVertex2i(1006,  0); glVertex2i(1006,160); glVertex2i(526,160); glEnd();	
- 	//glColor3f(0,0,1); glBegin(GL_QUADS); glVertex2i(526,160); glVertex2i(1006,160); glVertex2i(1006,320); glVertex2i(526,320); glEnd();
+	glColor3f(0,1,1); glBegin(GL_QUADS); glVertex2i(526,  0); glVertex2i(1006,  0); glVertex2i(1006,160); glVertex2i(526,160); glEnd();	
+ 	glColor3f(0,0,1); glBegin(GL_QUADS); glVertex2i(526,160); glVertex2i(1006,160); glVertex2i(1006,320); glVertex2i(526,320); glEnd();
  
 	int r, mx, my, mp, dof;
 	float rayX, rayY, rayA, xo, yo, distT;
@@ -174,13 +174,13 @@ void drawRays2D() {
 			rayX = vx;
 			rayY = vy;
 			distT = distV;
-			glColor3f(0.9,1,1);
+			glColor3f(0.9,0,0);
 		} 
 		if (distV > distH){  //Horizontal Wall Hit First
 			rayX = hx;
 			rayY = hy;
 			distT = distH;
-			glColor3f(0.7,1,1);
+			glColor3f(0.7,0,0);
 		}
 		
 		glLineWidth(3);
@@ -244,13 +244,44 @@ void display() {
 		pdx = cos(pAngle) * 5;
 		pdy = sin(pAngle) * 5;
 	}
+	
+	int xo = 0;
+	if(pdx < 0) {
+		xo = -20;
+	} else {
+		xo = 20;
+	}
+	
+	int yo = 0;
+	if(pdy < 0) {
+		yo = -20;
+	} else {
+		yo = 20;
+	}
+	
+	int ipx = playerX / 64.0, ipx_add_xo = (playerX + xo) / 64.0, ipx_sub_xo = (playerX - xo) / 64.0;
+	int ipy = playerY / 64.0, ipy_add_yo = (playerY + yo) / 64.0, ipy_sub_yo = (playerY - yo) / 64.0;
+	
 	if (keys.w == 1) {
-		playerX += pdx * 0.02 * fps;
-		playerY += pdy * 0.02 * fps;
+		if(map[ipy * mapX + ipx_add_xo] == 0)
+		{
+			playerX += pdx * 0.02 * fps;
+		}
+		if (map[ipy_add_yo * mapX + ipx] == 0) 
+		{
+			playerY += pdy * 0.02 * fps;
+		}
+	
 	}
 	if (keys.s == 1) {
-		playerX -= pdx * 0.02 * fps;
-		playerY -= pdy * 0.02 * fps;
+		if(map[ipy * mapX + ipx_sub_xo] == 0)
+		{
+			playerX -= pdx * 0.02 * fps;
+		}
+		if (map[ipy_sub_yo * mapX + ipx] == 0) 
+		{
+			playerY -= pdy * 0.02 * fps;
+		}
 	}
 	
  glutPostRedisplay();
