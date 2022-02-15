@@ -8,7 +8,13 @@
 #define P3 3*PI/2
 #define DR 0.0174533
 
+typedef struct {
+	int w, a, s, d; //Button State
+}InputKeys; 
+InputKeys keys;
+
 float playerX, playerY, pdx, pdy, pAngle;
+float frame1, frame2, fps;
 
 int mapX = 8, mapY = 8, mapS = 64;
 int map[] = 
@@ -45,7 +51,7 @@ void drawMap2D() {
 }
 
 void drawPlayer() {
-	glColor3f(1,1,0);
+	glColor3f(1,0,0);
 	glPointSize(8);
 	glBegin(GL_POINTS);
 	glVertex2i(playerX, playerY);
@@ -168,16 +174,15 @@ void drawRays2D() {
 			rayX = vx;
 			rayY = vy;
 			distT = distV;
-			glColor3f(0.9,0,0);
+			glColor3f(0.9,1,1);
 		} 
 		if (distV > distH){  //Horizontal Wall Hit First
 			rayX = hx;
 			rayY = hy;
 			distT = distH;
-			glColor3f(0.7,0,0);
+			glColor3f(0.7,1,1);
 		}
 		
-		glColor3f(1,0,0);
 		glLineWidth(3);
 		glBegin(GL_LINES);
 		glVertex2i(playerX, playerY);
@@ -219,11 +224,42 @@ void drawRays2D() {
 }
 
 void display() {
+	frame2 = glutGet(GLUT_ELAPSED_TIME);
+	fps = frame2 - frame1;
+	frame1 = glutGet(GLUT_ELAPSED_TIME);
+	
+	if (keys.a == 1) {
+	pAngle -= 0.002 * fps;
+		if (pAngle < 0) {
+			pAngle += 2 * PI;
+		}
+	pdx = cos(pAngle) * 5;
+	pdy = sin(pAngle) * 5;
+	}
+	if (keys.d == 1) {
+		pAngle += 0.002 * fps;
+		if (pAngle > 2 * PI) {
+			pAngle -= 2 * PI;
+		}
+		pdx = cos(pAngle) * 5;
+		pdy = sin(pAngle) * 5;
+	}
+	if (keys.w == 1) {
+		playerX += pdx * 0.02 * fps;
+		playerY += pdy * 0.02 * fps;
+	}
+	if (keys.s == 1) {
+		playerX -= pdx * 0.02 * fps;
+		playerY -= pdy * 0.02 * fps;
+	}
+	
+ glutPostRedisplay();
  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
  drawMap2D();
  drawPlayer();
  drawRays2D();
  glutSwapBuffers();
+ 
 }
 
 void init() {
@@ -234,42 +270,61 @@ void init() {
 	pdy = sin(pAngle) * 5;
 }
 
-void controls(unsigned char key, int x, int y) {
-	if (key == 'a') {
-		pAngle -= 0.1;
-		if (pAngle < 0) {
-			pAngle += 2 * PI;
-		}
-		pdx = cos(pAngle) * 5;
-		pdy = sin(pAngle) * 5;
+void ButtonDown(unsigned char key, int x, int y) {
+	if (key == 'w') 
+	{
+		keys.w = 1;
 	}
-	if (key == 'd') {
-		pAngle += 0.1;
-		if (pAngle > 2 * PI) {
-			pAngle -= 2 * PI;
-		}
-		pdx = cos(pAngle) * 5;
-		pdy = sin(pAngle) * 5;
+	if (key == 'a') 
+	{
+		keys.a = 1;
 	}
-	if (key == 'w') {
-		playerX += pdx;
-		playerY += pdy;
+	if (key == 's') 
+	{
+		keys.s = 1;
 	}
-	if (key == 's') {
-		playerX -= pdx;
-		playerY -= pdy;
+	if (key == 'd') 
+	{
+		keys.d = 1;
 	}
 	glutPostRedisplay();
+}
+
+void ButtonUp(unsigned char key, int x, int y) {
+	if (key == 'w') 
+	{
+		keys.w = 0;
+	}
+	if (key == 'a') 
+	{
+		keys.a = 0;
+	}
+	if (key == 's') 
+	{
+		keys.s = 0;
+	}
+	if (key == 'd') 
+	{
+		keys.d = 0;
+	}
+	glutPostRedisplay();
+}
+
+void resize(int w, int h) {
+	glutReshapeWindow(1024, 512);
 }
 
 int main(int argc, char** argv) { 
  glutInit(&argc, argv);
  glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA);
  glutInitWindowSize(1024,512);
+ glutInitWindowPosition(200, 200); 
  glutCreateWindow("Wolftonian");
  init();
  glutDisplayFunc(display);
- glutKeyboardFunc(controls);
+ glutReshapeFunc(resize);
+ glutKeyboardFunc(ButtonDown);
+ glutKeyboardUpFunc(ButtonUp);
  glutMainLoop();
  return 0;
 }
